@@ -46,7 +46,7 @@ def main() -> None:
         cid = upsert(conn, "clients",
                      {"name": name, "config_path": str(folder.relative_to(CLIENTS_DIR.parent.parent)),
                       "created_at": now_iso()},
-                      conflict_cols=["name"], update_cols="config_path")
+                      conflict_cols=["name"], update_cols=["config_path"])
     print(f"Client {name!r} registered with id {cid}")
 
 if __name__ == "__main__":
