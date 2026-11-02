@@ -1,0 +1,57 @@
+display_name: Vizcorn
+
+offer: >-
+  Budapest-based SAP consultancy: S/4HANA, Plant Maintenance, SD, master data and MDG,
+  plus an in-house data quality tool. Entry offer: fixed-price master data readiness check.
+
+positioning: >-
+  SAP master data and S/4HANA readiness for mid-sized manufacturers and distributors
+  in DACH, Hungary and CEE.
+
+languages: [en, de]
+regions: [DACH, Hungary, CEE]
+
+pillars:
+  - name: master_data_quality
+    description: Duplicates, incomplete records and cleansing of SAP master data
+  - name: s4hana_readiness
+    description: Getting data ready for an S/4HANA migration (brownfield or greenfield)
+  - name: mdg
+    description: SAP Master Data Governance rollouts, workflows and ownership
+  - name: plant_maintenance
+    description: SAP PM in S/4HANA, equipment and asset master data
+  - name: data_quality_tooling
+    description: Tools and automation for measuring and fixing SAP data quality
+
+topics:
+  - name: master_data_quality
+    pillar: master_data_quality
+    keywords:
+      en: ["SAP master data quality", "duplicate vendor records", "material master data cleansing"]
+      de: ["Stammdatenqualität SAP", "Dubletten Lieferantenstamm", "Materialstamm Bereinigung"]
+  - name: s4hana_data_migration
+    pillar: s4hana_readiness
+    keywords:
+      en: ["S/4HANA data migration", "S/4HANA migration data", "S/4HANA readiness"]
+      de: ["S/4HANA Datenmigration", "S/4HANA Umstellung Stammdaten", "S/4HANA Migration Mittelstand"]
+  - name: mdg
+    pillar: mdg
+    keywords:
+      en: ["SAP MDG", "SAP Master Data Governance"]
+      de: ["SAP MDG Einführung", "Stammdatengovernance SAP"]
+  - name: plant_maintenance
+    pillar: plant_maintenance
+    keywords:
+      en: ["SAP Plant Maintenance S/4HANA", "SAP PM master data"]
+      de: ["SAP PM Instandhaltung", "Instandhaltung S/4HANA"]
+  - name: data_quality_tooling
+    pillar: data_quality_tooling
+    keywords:
+      en: ["SAP data quality tool", "SAP data cleansing"]
+      de: ["Datenqualität SAP", "Datenbereinigung SAP"]
+
+compliance:
+  rules:
+    - Never name clients of the team's previous employers.
+    - Never present past projects from previous employers as Vizcorn case studies.
+    - Never claim results for Vizcorn clients (there are none yet).
