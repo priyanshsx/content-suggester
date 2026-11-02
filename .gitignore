@@ -1,4 +1,4 @@
 .env
 .venv
 
-config/clients/vizcorn/
+config/clients/
