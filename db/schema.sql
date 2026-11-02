@@ -85,4 +85,4 @@ CREATE TABLE IF NOT EXISTS schema_migrations (
 );
 
 CREATE INDEX IF NOT EXISTS idx_items_client_posted ON items (client_id, posted_at);
-CREATE INDEX IF NOT EXISTS idx.suggestions_client_week ON suggestions (client_id, week);
+CREATE INDEX IF NOT EXISTS idx_suggestions_client_week ON suggestions (client_id, week);

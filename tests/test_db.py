@@ -41,7 +41,7 @@ def test_upsert_updates_columns(conn):
     db.upsert(conn, "items", {**item, "text": "new", "first_seen_at": "2026-11-02", "last_seen_at": "2026-11-02"},
               ["client_id", "url"], update_cols=["text", "last_seen_at"])
     row = conn.execute("SELECT text, first_seen_at, last_seen_at FROM items").fetchone()
-    assert (row["text"], row["first_seen_at"], row["last_seen_at"]) == ["new", "2026-11-01", "2026-11-02"]
+    assert (row["text"], row["first_seen_at"], row["last_seen_at"]) == ("new", "2026-11-01", "2026-11-02")
 #--------------------------------------------------------------#
 
 def test_get_client_id(conn):
