@@ -1,0 +1,28 @@
+# Defaults for every client. A client's config.yaml overrides any of these.
+# Lists are replaced, not merged: if a client sets "sources", it replaces this list.
+
+languages: [en]
+lookback_days: 7
+threads_per_week: 10
+max_per_author: 2
+max_items_per_run: 200
+
+sources: [linkedin_search, sap_community, manual_paste]
+
+query_templates:
+  linkedin_search: 'site:linkedin.com/posts "{keyword}"'
+  sap_community: 'site:community.sap.com "{keyword}"'
+
+scoring:
+  recency_half_life_days: 3
+  points:
+    relevant: 40
+    pain_or_question: 20
+    region_match: 10
+    recency: 15
+    engagement: 15
+  author_type_points:
+    buyer: 15
+    peer: 5
+    vendor: -100
+    other: 0

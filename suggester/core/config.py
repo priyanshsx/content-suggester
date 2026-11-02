@@ -35,7 +35,7 @@ class Config(Strict):
     offer: str 
     positioning: str 
     languages: list[str]
-    regions: list[str] = Field(default_factor=list)
+    regions: list[str] = Field(default_factory=list)
     pillars: list[Pillar] = Field(min_length=1)
     topics: list[Topic] = Field(min_length=1)
     compliance: Compliance = Field(default_factory=Compliance)
