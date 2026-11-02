@@ -1,13 +1,6 @@
 #---------------------beginning-of-code------------------------#
 #--------------------------------------------------------------#
 
-# File: suggester/cli.py
-# Purpose: the command you run. Loads config + database, then runs one stage or all of them.
-# Usage:   python -m suggester --client vizcorn --stage all
-#          python -m suggester --client vizcorn --stage collect --dry-run
-#          python -m suggester --client vizcorn --stage import-feedback --file outputs/vizcorn/threads/2026-W45.csv
-#--------------------------------------------------------------#
-
 # Imports Libraries
 import argparse
 import sys
