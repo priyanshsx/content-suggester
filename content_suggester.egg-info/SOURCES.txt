@@ -19,9 +19,11 @@ suggester/core/schemas.py
 suggester/pipeline/__init__.py
 suggester/pipeline/classify.py
 suggester/pipeline/collect.py
+suggester/pipeline/context.py
 suggester/pipeline/export.py
 suggester/pipeline/feedback.py
 suggester/pipeline/queries.py
+suggester/pipeline/report.py
 suggester/pipeline/score.py
 suggester/pipeline/select.py
 suggester/signals/__init__.py
@@ -31,6 +33,12 @@ suggester/sources/linkedin_search.py
 suggester/sources/manual_paste.py
 suggester/sources/sap_community.py
 suggester/sources/serper.py
+tests/test_cli.py
+tests/test_collect.py
 tests/test_config.py
 tests/test_db.py
+tests/test_llm.py
+tests/test_pipeline.py
 tests/test_pipeline_fake_source.py
+tests/test_prompts.py
+tests/test_sources.py

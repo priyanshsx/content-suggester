@@ -32,7 +32,7 @@ def init_db(conn: sqlite3.Connection) -> list[str]:
     conn.executescript(SCHEMA_PATH.read_text())
     done = {r["filename"] for r in conn.execute("SELECT filename FROM schema_migrations")}
     applied = []
-    for f in sorted(MIGRATIONS_DIR.glob(".sql")):
+    for f in sorted(MIGRATIONS_DIR.glob("*.sql")):
         if f.name in done:
             continue
         conn.executescript(f.read_text())
