@@ -1,5 +1,4 @@
 # Defaults for every client. A client's config.yaml overrides any of these.
-# Lists are replaced, not merged: if a client sets "sources", it replaces this list.
 
 languages: [en]
 lookback_days: 7
