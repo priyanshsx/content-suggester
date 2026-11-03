@@ -53,6 +53,7 @@ class Config(Strict):
     topics: list[Topic] = Field(min_length=1)
     compliance: Compliance = Field(default_factory=Compliance)
     engagement_goal: str                     # what makes a post worth commenting on
+    audience: str                            # who counts as a 'buyer' author
 
     lookback_days: int = Field(gt=0)
     threads_per_week: int = Field(gt=0)

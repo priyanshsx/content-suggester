@@ -36,6 +36,7 @@ def build_prompt(cfg: Config, item: dict) -> str:
         regions=", ".join(cfg.regions) or "any",
         pillars="\n".join(f"- {p.name}: {p.description}" for p in cfg.pillars),
         engagement_goal=cfg.engagement_goal.strip(),
+        audience=cfg.audience.strip(),
         compliance_rules="\n".join(f"- {r}" for r in cfg.compliance.rules) or "- none",
         platform=item.get("platform") or "unknown",
         author=item.get("author_name") or "unknown",

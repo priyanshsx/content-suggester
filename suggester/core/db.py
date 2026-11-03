@@ -41,8 +41,8 @@ def init_db(conn: sqlite3.Connection) -> list[str]:
             (f.name, now_iso())
         )
         applied.append(f.name)
-        conn.commit()
-        return applied 
+    conn.commit()
+    return applied
 #--------------------------------------------------------------#
 
 # whitelists table/col names

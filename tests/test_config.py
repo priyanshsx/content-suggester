@@ -1,11 +1,24 @@
 #---------------------beginning-of-code------------------------#
 #--------------------------------------------------------------#
 
+# File: tests/test_config.py
+# Purpose: check that configs load, merge correctly and that typos are caught.
+# Usage:   python -m pytest tests/test_config.py -v
+#--------------------------------------------------------------#
+
+# Imports Libraries
 import pytest
 from pydantic import ValidationError
+
 from suggester.core import config
 #--------------------------------------------------------------#
 
+# Helper: a valid config as a plain dict, which tests then break on purpose
+def valid_data():
+    return config.load_config("vizcorn").model_dump()
+#--------------------------------------------------------------#
+
+# Tests: loading and merging
 def test_vizcorn_config_loads():
     cfg = config.load_config("vizcorn")
     assert cfg.client == "vizcorn"
@@ -14,17 +27,19 @@ def test_vizcorn_config_loads():
     assert len(cfg.topics) >= 1
 
 
+def test_bacon_config_loads():
+    cfg = config.load_config("bacon")
+    assert cfg.sources == ["linkedin_search", "manual_paste"]   # no SAP Community
+    assert cfg.languages == ["en"] and "hiring manager" in cfg.audience
+
+
 def test_deep_merge_keeps_template_keys():
     base = {"scoring": {"a": 1, "b": 2}, "sources": ["x", "y"]}
     over = {"scoring": {"b": 20}, "sources": ["z"]}
     assert config.deep_merge(base, over) == {"scoring": {"a": 1, "b": 20}, "sources": ["z"]}
+#--------------------------------------------------------------#
 
-
-def valid_data():
-    cfg = config.load_config("vizcorn")
-    return cfg.model_dump()
-
-
+# Tests: validation catches mistakes
 def test_misspelled_key_is_rejected():
     data = valid_data()
     data["threds_per_week"] = 5
