@@ -18,18 +18,21 @@ Text (may be only a search snippet):
 {{text}}
 """
 
-## How to judge it
-is_relevant = true only if ALL of these hold:
-- The post is about one of the pillars above (not just SAP in general).
-- A comment from {{display_name}} could add real expertise: an answer, a lesson, a useful question.
-- It is a conversation, not a job ad, event promo, course ad or product ad.
+## When a post is worth commenting on (is_relevant)
+{{engagement_goal}}
+
+Never relevant, whatever the goal says:
+- Job ads and candidate searches (set is_job_post = true instead).
+- Pages with nothing to comment on: category pages, tag lists, profile pages.
 
 author_type:
 - buyer: works at a company that uses SAP (IT lead, SAP lead, data owner, CIO, project manager, key user) and talks about their own situation.
 - peer: consultant, freelancer or expert sharing opinions or advice.
-- vendor: selling a product, service, course, event or job. Promotional tone, calls to book a demo, "we help companies...". Recruiters count as vendor.
+- vendor: selling a product, service, course or event. Promotional tone, calls to book a demo, "we help companies...". Recruiters count as vendor. SAP itself posting about its own products counts as vendor.
 - other: anything else (news, students, unclear).
-A vendor post is never relevant.
+A vendor post can still be relevant if the goal above says so (e.g. SAP announcements for visibility).
+
+is_job_post = true if the post advertises a job, a freelance/contract role, or looks for candidates. Note in the reason whether it is the hiring company itself or a recruiter/agency.
 
 has_pain_or_question = true if the author describes a problem, delay, frustration or asks for advice.
 

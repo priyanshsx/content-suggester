@@ -1,6 +1,11 @@
 #---------------------beginning-of-code------------------------#
 #--------------------------------------------------------------#
 
+# File: tests/test_llm.py
+# Purpose: check call_llm without real API calls (llm._send is replaced with a fake).
+# Usage:   python -m pytest tests/test_llm.py -v
+#--------------------------------------------------------------#
+
 # Imports Libraries
 import pytest
 from pydantic import BaseModel
@@ -82,5 +87,31 @@ def test_cost_is_logged(conn, monkeypatch):
     llm.call_llm("test", "prompt E", Verdict, conn)
     cost = conn.execute("SELECT cost_usd FROM llm_calls").fetchone()[0]
     assert cost == pytest.approx(0.0015)              # 1000 x $1/M + 100 x $5/M
+#--------------------------------------------------------------#
+
+# Tests: gateway client (Unoblox-style) is chosen when LLM_BASE_URL is set
+def test_gateway_sends_system_message_and_reads_usage(conn, monkeypatch):
+    seen = {}
+
+    class FakeCompletions:
+        def create(self, model, max_tokens, messages):
+            seen["messages"] = messages
+            usage = type("U", (), {"prompt_tokens": 1000, "completion_tokens": 100})()
+            msg = type("M", (), {"content": '{"is_relevant": true, "reason": "via gateway"}'})()
+            return type("R", (), {"choices": [type("C", (), {"message": msg})()], "usage": usage})()
+
+    fake = type("Fake", (), {"chat": type("Chat", (), {"completions": FakeCompletions()})()})()
+    monkeypatch.setattr(llm, "_client", ("gateway", fake))
+    out = llm.call_llm("test", "prompt F", Verdict, conn)
+    assert out.reason == "via gateway"
+    assert seen["messages"][0]["role"] == "system"
+
+
+def test_missing_key_gives_clear_error(monkeypatch):
+    monkeypatch.setattr(llm, "_client", None)
+    monkeypatch.delenv("LLM_BASE_URL", raising=False)
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    with pytest.raises(llm.LLMError, match="No LLM key"):
+        llm._get_client()
 #--------------------------------------------------------------#
 #----------------------End-of-code-----------------------------#

@@ -3,4 +3,5 @@ pyyaml
 python-dotenv
 httpx
 anthropic
+openai
 pytest

@@ -1,6 +1,13 @@
 #---------------------beginning-of-code------------------------#
 #--------------------------------------------------------------#
 
+# File: suggester/pipeline/classify.py
+# Purpose: stage 2. Ask the LLM to judge every item that has no verdict yet, and store the
+#          verdict in the classifications table. Items are never classified twice unless you
+#          delete their classification (e.g. after improving the prompt).
+#          --dry-run: only count what would be classified.
+#--------------------------------------------------------------#
+
 # Imports Libraries
 import json
 
@@ -28,6 +35,7 @@ def build_prompt(cfg: Config, item: dict) -> str:
         positioning=cfg.positioning,
         regions=", ".join(cfg.regions) or "any",
         pillars="\n".join(f"- {p.name}: {p.description}" for p in cfg.pillars),
+        engagement_goal=cfg.engagement_goal.strip(),
         compliance_rules="\n".join(f"- {r}" for r in cfg.compliance.rules) or "- none",
         platform=item.get("platform") or "unknown",
         author=item.get("author_name") or "unknown",
@@ -75,7 +83,7 @@ def run(ctx: RunContext) -> None:
 
     model = _settings()[0]
     version = prompt_version(PROMPT)
-    done = relevant = failed = 0
+    done = relevant = jobs = failed = 0
     for item in items:
         try:
             v = classify_one(ctx.cfg, ctx.conn, ctx.client_id, item)
@@ -93,12 +101,15 @@ def run(ctx: RunContext) -> None:
             "comment_angle": v.comment_angle,
             "reason": v.reason,
             "new_terms_json": json.dumps(v.new_terms, ensure_ascii=False),
+            "is_job_post": int(v.is_job_post),
             "model": model,
             "prompt_version": version,
             "created_at": now_iso(),
         }, conflict_cols=["item_id"])
         done += 1
         relevant += v.is_relevant
-    log.info("classify: %d classified, %d relevant, %d failed", done, relevant, failed)
+        jobs += v.is_job_post
+    log.info("classify: %d classified, %d relevant, %d job posts, %d failed",
+             done, relevant, jobs, failed)
 #--------------------------------------------------------------#
 #----------------------End-of-code-----------------------------#

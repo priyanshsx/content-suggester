@@ -52,6 +52,7 @@ class Config(Strict):
     pillars: list[Pillar] = Field(min_length=1)
     topics: list[Topic] = Field(min_length=1)
     compliance: Compliance = Field(default_factory=Compliance)
+    engagement_goal: str                     # what makes a post worth commenting on
 
     lookback_days: int = Field(gt=0)
     threads_per_week: int = Field(gt=0)
@@ -60,6 +61,8 @@ class Config(Strict):
     max_items_per_run: int = Field(gt=0)
     sources: list[str] = Field(min_length=1)
     query_templates: dict[str, str]
+    group_keywords: int = Field(default=1, ge=1)            # keywords combined per search (OR)
+    query_languages: dict[str, list[str]] = Field(default_factory=dict)  # per source; default all
     scoring: Scoring
 #--------------------------------------------------------------#
 

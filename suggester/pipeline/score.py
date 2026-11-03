@@ -1,12 +1,15 @@
 #---------------------beginning-of-code------------------------#
 #--------------------------------------------------------------#
+
+# File: suggester/pipeline/score.py
+# Purpose: stage 3. Give every candidate thread a score using the weights in the config:
 #   relevant          fixed points (only relevant items are candidates)
 #   pain_or_question  points if the author has a problem or question
 #   region_match      points if the region is one of the client's regions
 #   recency           points x 0.5^(age_days / half_life)   -> newer = more points
 #   engagement        points x percentile of comment count within the same platform
 #   author type       buyer / peer / vendor / other points
-# Candidates: relevant, not vendor, not suggested before, posted within lookback_days.
+# Candidates: relevant, not a job post, not suggested before, posted within lookback_days.
 #--------------------------------------------------------------#
 
 # Imports Libraries
@@ -59,7 +62,7 @@ def engagement_percentiles(items: list[dict]) -> dict[int, float]:
     return result
 #--------------------------------------------------------------#
 
-# Candidates: relevant, not vendor, never suggested before
+# Candidates: relevant, not a job post, never suggested before
 def candidates(ctx: RunContext) -> list[dict]:
     rows = ctx.conn.execute(
         "SELECT i.*, c.id AS classification_id, c.pillar, c.author_type, c.region, "
@@ -67,7 +70,7 @@ def candidates(ctx: RunContext) -> list[dict]:
         "FROM items i JOIN classifications c ON c.item_id = i.id "
         "LEFT JOIN suggestions s ON s.item_id = i.id AND s.client_id = i.client_id "
         "     AND s.week != ? "
-        "WHERE i.client_id = ? AND c.is_relevant = 1 AND c.author_type != 'vendor' "
+        "WHERE i.client_id = ? AND c.is_relevant = 1 AND c.is_job_post = 0 "
         "  AND s.id IS NULL",
         (ctx.week, ctx.client_id)).fetchall()
     return [dict(r) for r in rows]

@@ -39,12 +39,14 @@ class SourceItem(BaseModel):
 # "reason" comes first so the model thinks before it decides.
 class ThreadClassification(BaseModel):
     reason: str = Field(description="One or two sentences: why this is or isn't worth joining")
-    is_relevant: bool = Field(description="True only if the client could add real expertise here")
+    is_relevant: bool = Field(description="True if the post is worth commenting on, per the engagement goal")
     pillar: str = Field(description="One of the listed pillar names, or 'none'")
     author_type: Literal["buyer", "peer", "vendor", "other"]
     has_pain_or_question: bool = Field(description="Author describes a problem or asks a question")
     region: str = Field(description="One of the listed regions, 'other', or 'unknown'")
     comment_angle: str = Field(description="What the client could usefully say. Empty if not relevant")
+    is_job_post: bool = Field(default=False,
+                              description="True if the post advertises a job or looks for candidates")
     new_terms: list[str] = Field(default_factory=list, max_length=3,
                                  description="Up to 3 short phrases the author uses that are worth "
                                              "tracking as search keywords")

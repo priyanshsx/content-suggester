@@ -1,4 +1,5 @@
 # Defaults for every client. A client's config.yaml overrides any of these.
+# Lists are replaced, not merged: if a client sets "sources", it replaces this list.
 
 languages: [en]
 lookback_days: 7
@@ -8,6 +9,11 @@ max_per_pillar: 4
 max_items_per_run: 200
 
 sources: [linkedin_search, sap_community, manual_paste]
+
+# What makes a post worth commenting on. Clients override this in their own config.
+engagement_goal: >-
+  Comment where the client can add real expertise to a conversation about one of its pillars:
+  an answer, a lesson from experience, or a useful question.
 
 query_templates:
   linkedin_search: 'site:linkedin.com/posts "{keyword}"'
@@ -24,5 +30,5 @@ scoring:
   author_type_points:
     buyer: 15
     peer: 5
-    vendor: -100
+    vendor: -10              # relevant vendor posts (e.g. SAP announcements) rank lower
     other: 0

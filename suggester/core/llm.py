@@ -1,6 +1,22 @@
 #---------------------beginning-of-code------------------------#
 #--------------------------------------------------------------#
 
+# File: suggester/core/llm.py
+# Purpose: the only place that talks to the LLM.
+#   call_llm(task, prompt, schema, conn, client_id)
+#     1. checks the cache (same model + schema + prompt = same answer, free)
+#     2. asks the model for JSON matching the Pydantic schema
+#     3. validates; on failure sends the error back and retries (max 2 retries)
+#     4. logs tokens and cost to llm_calls
+#     5. saves the validated answer to llm_cache
+#   Model and prices come from .env: LLM_MODEL, LLM_PRICE_INPUT_PER_MTOK, LLM_PRICE_OUTPUT_PER_MTOK
+#
+#   Two ways to reach the model (chosen by .env):
+#     - Gateway (e.g. Unoblox): set LLM_BASE_URL=https://api.unoblox.ai/v1 and UNOBLOX_API_KEY
+#       (or LLM_API_KEY). Uses the OpenAI-style API, model names like anthropic/claude-sonnet-5-5.
+#     - Anthropic directly: leave LLM_BASE_URL unset and set ANTHROPIC_API_KEY.
+#--------------------------------------------------------------#
+
 # Imports Libraries
 import hashlib
 import json
@@ -22,7 +38,7 @@ log = get_logger(__name__)
 
 T = TypeVar("T", bound=BaseModel)
 MAX_RETRIES = 2
-_client = None                                
+_client = None                                # Anthropic client, created on first use
 
 SYSTEM = (
     "You are a precise data extraction and classification assistant. "
@@ -46,14 +62,36 @@ def _settings() -> tuple[str, float, float]:
     return model, price_in, price_out
 #--------------------------------------------------------------#
 
-# One API call. Returns (text, input_tokens, output_tokens). Tests replace this with a fake.
-def _send(model: str, system: str, messages: list[dict], max_tokens: int) -> tuple[str, int, int]:
+# Create the API client once: a gateway (OpenAI-style) if LLM_BASE_URL is set, else Anthropic
+def _get_client():
     global _client
     if _client is None:
-        import anthropic
-        _client = anthropic.Anthropic()       # reads ANTHROPIC_API_KEY from the environment
-    resp = _client.messages.create(model=model, system=system, messages=messages,
-                                   max_tokens=max_tokens)
+        base_url = os.environ.get("LLM_BASE_URL")
+        if base_url:
+            from openai import OpenAI
+            api_key = os.environ.get("LLM_API_KEY") or os.environ.get("UNOBLOX_API_KEY")
+            if not api_key:
+                raise LLMError("LLM_BASE_URL is set but neither LLM_API_KEY nor UNOBLOX_API_KEY is")
+            _client = ("gateway", OpenAI(base_url=base_url, api_key=api_key))
+        else:
+            if not os.environ.get("ANTHROPIC_API_KEY"):
+                raise LLMError("No LLM key: set LLM_BASE_URL + UNOBLOX_API_KEY, or ANTHROPIC_API_KEY")
+            import anthropic
+            _client = ("anthropic", anthropic.Anthropic())
+    return _client
+#--------------------------------------------------------------#
+
+# One API call. Returns (text, input_tokens, output_tokens). Tests replace this with a fake.
+def _send(model: str, system: str, messages: list[dict], max_tokens: int) -> tuple[str, int, int]:
+    kind, client = _get_client()
+    if kind == "gateway":
+        resp = client.chat.completions.create(
+            model=model, max_tokens=max_tokens,
+            messages=[{"role": "system", "content": system}, *messages])
+        text = resp.choices[0].message.content or ""
+        return text, resp.usage.prompt_tokens, resp.usage.completion_tokens
+    resp = client.messages.create(model=model, system=system, messages=messages,
+                                  max_tokens=max_tokens)
     text = "".join(block.text for block in resp.content if block.type == "text")
     return text, resp.usage.input_tokens, resp.usage.output_tokens
 #--------------------------------------------------------------#

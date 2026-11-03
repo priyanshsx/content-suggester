@@ -1,6 +1,12 @@
 #---------------------beginning-of-code------------------------#
 #--------------------------------------------------------------#
 
+# File: tests/test_sources.py
+# Purpose: check the adapters turn raw results into clean SourceItems. No real API calls:
+#          serper._post is replaced with a fake that returns Google-style results.
+# Usage:   python -m pytest tests/test_sources.py -v
+#--------------------------------------------------------------#
+
 # Imports Libraries
 from datetime import date
 
@@ -21,6 +27,9 @@ LINKEDIN_RESULTS = {"organic": [
      "snippet": "How did others clean vendor master data before go-live?", "date": "3 days ago"},
     {"title": "Jane Doe - SAP Lead | LinkedIn",                          # a profile, not a post
      "link": "https://www.linkedin.com/in/jane-doe", "snippet": "Profile"},
+    {"title": "We're hiring | Acme Jobs",                                 # job ad
+     "link": "https://www.linkedin.com/posts/c2c-jobs_sap-sd-lead-consultant-activity-1",
+     "snippet": "SAP SD S/4HANA #JobSearch"},
     {"title": "Why MDG projects stall | Max Mustermann | 14 comments",
      "link": "https://www.linkedin.com/posts/max-mustermann_mdg-activity-456",
      "snippet": "Ownership is the real problem.", "date": "Oct 30, 2026"},
@@ -29,6 +38,8 @@ LINKEDIN_RESULTS = {"organic": [
 SAP_RESULTS = {"organic": [
     {"title": "Duplicate BP after S/4 conversion", "snippet": "We see duplicates...",
      "link": "https://community.sap.com/t5/enterprise-resource-planning-q-a/dup/qaq-p/1"},
+    {"title": "Financial Management", "snippet": "SAP InnoJam; SAP Inside Track",   # category page
+     "link": "https://community.sap.com/t5/financial-management/ct-p/financial-management"},
     {"title": "SAP Community home", "link": "https://community.sap.com/", "snippet": "Home"},
 ]}
 
@@ -77,13 +88,13 @@ def test_author_from_title():
 def test_linkedin_keeps_posts_only(fake_serper):
     fake_serper(LINKEDIN_RESULTS)
     items = LinkedInSearch().fetch([q()], date.today())
-    assert len(items) == 2                                     # profile dropped
+    assert len(items) == 3                                     # profile dropped, job ad kept
     first = items[0]
     assert first.url == "https://www.linkedin.com/posts/jane-doe_s4hana-activity-123"
     assert first.author_name == "Jane Doe"
     assert first.author_handle == "jane-doe"
     assert first.platform == "linkedin" and first.source == "linkedin_search"
-    assert items[1].posted_at == "2026-10-30"
+    assert items[2].posted_at == "2026-10-30"
 
 
 def test_german_query_sets_country_and_language(fake_serper):

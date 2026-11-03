@@ -1,6 +1,11 @@
 #---------------------beginning-of-code------------------------#
 #--------------------------------------------------------------#
 
+# File: tests/test_pipeline.py
+# Purpose: run the whole pipeline end to end (classify -> score -> select -> export ->
+#          feedback -> report) on fake items, with a fake LLM. No API calls, no cost.
+# Usage:   python -m pytest tests/test_pipeline.py -v
+#--------------------------------------------------------------#
 
 # Imports Libraries
 import csv
@@ -20,11 +25,11 @@ from suggester.pipeline.context import RunContext
 TODAY = date(2026, 11, 3)
 
 
-def verdict(relevant=True, author="buyer", pain=True, region="DACH", pillar="mdg"):
+def verdict(relevant=True, author="buyer", pain=True, region="DACH", pillar="mdg", job=False):
     return ThreadClassification(reason="test", is_relevant=relevant, pillar=pillar,
                                 author_type=author, has_pain_or_question=pain, region=region,
                                 comment_angle="say something useful" if relevant else "",
-                                new_terms=["golden record"])
+                                is_job_post=job, new_terms=["golden record"])
 
 
 ITEMS = [
@@ -32,7 +37,10 @@ ITEMS = [
     ("https://l.com/posts/a_2", "Anna", "Second MDG post from Anna", verdict()),
     ("https://l.com/posts/a_3", "Anna", "Third MDG post from Anna", verdict()),
     ("https://l.com/posts/b_1", "Ben", "Book a demo of our MDG tool today", verdict(author="vendor")),
-    ("https://l.com/posts/c_1", "Cara", "Hiring SAP consultant in Berlin now", verdict(relevant=False)),
+    ("https://l.com/posts/c_1", "Cara", "Hiring SAP consultant in Berlin now",
+     verdict(relevant=False, author="vendor", job=True)),
+    ("https://l.com/posts/f_1", "Finn", "Generic SAP news with nothing to add",
+     verdict(relevant=False, author="other")),
     ("https://l.com/posts/d_1", "Dan", "Duplicate vendors after BP conversion",
      verdict(pillar="s4hana_readiness")),
     ("https://l.com/posts/e_1", "Eva", "PM equipment master is a mess here",
@@ -93,10 +101,19 @@ def test_unknown_pillar_becomes_none(ctx, monkeypatch):
 #--------------------------------------------------------------#
 
 # Tests: score + select
-def test_vendor_and_irrelevant_never_picked(ctx):
+def test_irrelevant_and_job_posts_never_picked(ctx):
     run_until_select(ctx)
     urls = picked_urls(ctx)
-    assert "https://l.com/posts/b_1" not in urls and "https://l.com/posts/c_1" not in urls
+    assert "https://l.com/posts/c_1" not in urls and "https://l.com/posts/f_1" not in urls
+
+
+def test_relevant_vendor_ranks_below_buyer(ctx):
+    classify.run(ctx)
+    score.run(ctx, today=TODAY)
+    scores = dict(ctx.conn.execute(
+        "SELECT i.author_name, c.score FROM classifications c JOIN items i ON i.id = c.item_id "
+        "WHERE c.score IS NOT NULL"))
+    assert scores["Ben"] < scores["Dan"]                # same pain/region, vendor vs buyer
 
 
 def test_max_per_author_and_count(ctx):
@@ -151,6 +168,10 @@ def test_export_feedback_report_round_trip(ctx, tmp_path):
     ctx.feedback_file = str(path)
     feedback.run(ctx)
     assert feedback.approval_rate(ctx) == (1, 2)
+
+    with open(tmp_path / "out" / "2026-W45_hiring_posts.csv", encoding="utf-8-sig") as f:
+        hiring = list(csv.DictReader(f))
+    assert [h["url"] for h in hiring] == ["https://l.com/posts/c_1"]
 
     report.run(ctx)
     with open(tmp_path / "out" / "new_terms.csv", encoding="utf-8-sig") as f:

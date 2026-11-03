@@ -11,7 +11,10 @@ from suggester.sources.base import clean_url, parse_search_date
 #--------------------------------------------------------------#
 
 # Global variables: keep only threads/blog posts (SAP Community URLs contain /t5/)
-THREAD_URL = re.compile(r"community\.sap\.com/t5/", re.IGNORECASE)
+# SAP Community URL endings tell us the page type:
+#   /qaq-p/ question   /qaa-p/ answer   /ba-p/ blog post   /td-p/ discussion   /m-p/ message
+# Everything else (/ct-p/ category, /bg-p/ blog board, /pd-p/ product, label pages) is navigation.
+THREAD_URL = re.compile(r"community\.sap\.com/t5/.+/(qaq-p|qaa-p|ba-p|td-p|m-p)/\d+", re.IGNORECASE)
 #--------------------------------------------------------------#
 
 # The adapter

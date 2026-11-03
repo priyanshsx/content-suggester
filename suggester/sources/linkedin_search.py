@@ -1,6 +1,11 @@
 #---------------------beginning-of-code------------------------#
 #--------------------------------------------------------------#
 
+# File: suggester/sources/linkedin_search.py
+# Purpose: LinkedIn posts found through Google (Serper) with "site:linkedin.com/posts".
+#          We never visit LinkedIn itself: we only read what Google shows (title, snippet, date).
+#--------------------------------------------------------------#
+
 # Imports Libraries
 import re
 from datetime import date
