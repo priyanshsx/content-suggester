@@ -4,6 +4,7 @@ languages: [en]
 lookback_days: 7
 threads_per_week: 10
 max_per_author: 2
+max_per_pillar: 4
 max_items_per_run: 200
 
 sources: [linkedin_search, sap_community, manual_paste]

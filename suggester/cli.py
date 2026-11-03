@@ -7,8 +7,9 @@ import sys
 
 from suggester.core.config import load_config
 from suggester.core.db import connect, get_client_id, init_db
+from suggester.core.llm import LLMError
 from suggester.core.log import get_logger
-from suggester.pipeline import classify, collect, export, feedback, score, select
+from suggester.pipeline import classify, collect, export, feedback, report, score, select
 from suggester.pipeline.context import RunContext, iso_week
 #--------------------------------------------------------------#
 
@@ -22,8 +23,9 @@ STAGES = {
     "select": select.run,
     "export": export.run,
     "import-feedback": feedback.run,
+    "report": report.run,
 }
-ALL_ORDER = ["collect", "classify", "score", "select", "export"]   # feedback runs separately
+ALL_ORDER = ["collect", "classify", "score", "select", "export"]   # feedback/report run separately
 #--------------------------------------------------------------#
 
 # Read the command-line arguments
@@ -67,7 +69,11 @@ def main(argv: list[str] | None = None) -> int:
                  " (dry run)" if ctx.dry_run else "")
         for name in stages:
             log.info("--- %s ---", name)
-            STAGES[name](ctx)
+            try:
+                STAGES[name](ctx)
+            except (LLMError, FileNotFoundError) as e:   # setup problems: show one clear line
+                log.error("%s stopped: %s", name, e)
+                return 1
         log.info("done")
         return 0
     finally:
