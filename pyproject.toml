@@ -13,6 +13,8 @@ dependencies = [
     "httpx",
     "anthropic",
     "openai",
+    "gspread",
+    "google-auth",
     "pytest",
 ]
 

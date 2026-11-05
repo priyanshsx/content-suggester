@@ -16,6 +16,7 @@ suggester/core/log.py
 suggester/core/paths.py
 suggester/core/prompts.py
 suggester/core/schemas.py
+suggester/core/sheets.py
 suggester/pipeline/__init__.py
 suggester/pipeline/classify.py
 suggester/pipeline/collect.py
@@ -26,6 +27,7 @@ suggester/pipeline/queries.py
 suggester/pipeline/report.py
 suggester/pipeline/score.py
 suggester/pipeline/select.py
+suggester/pipeline/sheet_sync.py
 suggester/signals/__init__.py
 suggester/sources/__init__.py
 suggester/sources/base.py

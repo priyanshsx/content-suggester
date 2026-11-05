@@ -42,6 +42,12 @@ class Compliance(Strict):
     rules: list[str] = Field(default_factory=list)
 
 
+class Sheets(Strict):
+    spreadsheet_id: str = ""                 # blank = the sync stage is skipped
+    posts_tab: str = "Posts"
+    hiring_tab: str = "Hiring"
+
+
 class Config(Strict):
     client: str                              # filled in from the folder name
     display_name: str
@@ -65,6 +71,7 @@ class Config(Strict):
     group_keywords: int = Field(default=1, ge=1)            # keywords combined per search (OR)
     query_languages: dict[str, list[str]] = Field(default_factory=dict)  # per source; default all
     scoring: Scoring
+    sheets: Sheets = Field(default_factory=Sheets)   # the client's Google Sheet (stage "sync")
 #--------------------------------------------------------------#
 
     # Cross-checks between sections that Pydantic can't see on its own
