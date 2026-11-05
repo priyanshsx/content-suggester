@@ -4,6 +4,7 @@
 # Imports Libraries
 from suggester.sources.linkedin_search import LinkedInSearch
 from suggester.sources.manual_paste import ManualPaste
+from suggester.sources.reddit_search import RedditSearch
 from suggester.sources.sap_community import SapCommunity
 #--------------------------------------------------------------#
 
@@ -11,6 +12,7 @@ from suggester.sources.sap_community import SapCommunity
 REGISTRY = {
     LinkedInSearch.name: LinkedInSearch,
     SapCommunity.name: SapCommunity,
+    RedditSearch.name: RedditSearch,
     ManualPaste.name: ManualPaste,
 }
 #--------------------------------------------------------------#
