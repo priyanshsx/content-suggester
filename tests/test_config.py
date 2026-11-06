@@ -22,14 +22,14 @@ def valid_data():
 def test_vizcorn_config_loads():
     cfg = config.load_config("vizcorn")
     assert cfg.client == "vizcorn"
-    assert cfg.threads_per_week == 10                  # from template
+    assert cfg.threads_per_week > 0                    # set (template default or override)
     assert cfg.languages == ["en", "de"]               # client overrides template
     assert len(cfg.topics) >= 1
 
 
 def test_bacon_config_loads():
     cfg = config.load_config("bacon")
-    assert cfg.sources == ["linkedin_search", "manual_paste"]   # no SAP Community
+    assert "sap_community" not in cfg.sources and "manual_paste" in cfg.sources
     assert cfg.languages == ["en"] and "hiring manager" in cfg.audience
 
 

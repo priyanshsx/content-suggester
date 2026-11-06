@@ -151,5 +151,25 @@ def test_build_queries_for_vizcorn():
     assert qs and all(x.text.startswith('site:linkedin.com/posts "') for x in qs)
     assert {x.language for x in qs} == {"en", "de"}
     assert build_queries(cfg, "manual_paste") == []            # no template = no queries
+# Tests: topics limited to some sources, and the Reddit per-subreddit cap
+def test_topic_sources_limit_queries():
+    cfg = load_config("bacon")
+    linkedin = {x.keyword for x in build_queries(cfg, "linkedin_search")}
+    reddit = {x.keyword for x in build_queries(cfg, "reddit_search")}
+    assert "marketing" in reddit and "marketing" not in linkedin      # Reddit-only topic
+    assert "AI slop" in reddit and "AI slop" in linkedin              # shared topic
+
+
+def test_reddit_has_its_own_cap():
+    from suggester.pipeline.select import pick
+    reddit = [{"platform": "reddit", "author_name": "r/marketing", "url": f"u{i}",
+               "pillar": f"p{i}", "score": 100 - i} for i in range(5)]
+    linkedin = [{"platform": "linkedin", "author_name": "Jane", "url": f"l{i}",
+                 "pillar": f"q{i}", "score": 50 - i} for i in range(5)]
+    chosen = pick(reddit + linkedin, 20, max_per_author=2, max_per_pillar=10, max_per_subreddit=4)
+    assert sum(c["platform"] == "reddit" for c in chosen) == 4
+    assert sum(c["platform"] == "linkedin" for c in chosen) == 2
+    # without max_per_subreddit, Reddit falls back to max_per_author (Quartermaster's behaviour)
+    assert sum(c["platform"] == "reddit" for c in pick(reddit, 20, 3, 10)) == 3
 #--------------------------------------------------------------#
 #----------------------End-of-code-----------------------------#

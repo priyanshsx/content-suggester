@@ -13,6 +13,8 @@ def build_queries(cfg: Config, source: str) -> list[Query]:
         return []
     queries, seen = [], set()
     for topic in cfg.topics:
+        if topic.sources is not None and source not in topic.sources:
+            continue                                 # topic limited to other sources
         for lang, keywords in topic.keywords.items():
             for kw in keywords:
                 text = template.format(keyword=kw)

@@ -30,6 +30,7 @@ class Topic(Strict):
     name: str
     pillar: str
     keywords: dict[str, list[str]]           # language code -> keywords
+    sources: list[str] | None = None         # only search these sources (default: all sources)
 
 
 class Scoring(Strict):
@@ -65,6 +66,8 @@ class Config(Strict):
     threads_per_week: int = Field(gt=0)
     max_per_author: int = Field(gt=0)
     max_per_pillar: int = Field(gt=0)
+    max_per_subreddit: int | None = Field(default=None, gt=0)   # Reddit threads per subreddit
+                                                                # (default: same as max_per_author)
     max_items_per_run: int = Field(gt=0)
     sources: list[str] = Field(min_length=1)
     query_templates: dict[str, str]
@@ -82,6 +85,10 @@ class Config(Strict):
             if t.pillar not in pillar_names:
                 raise ValueError(f"Topic {t.name!r} uses unknown pillar {t.pillar!r}. "
                                  f"Known pillars: {sorted(pillar_names)}")
+            for src in t.sources or []:
+                if src not in self.sources:
+                    raise ValueError(f"Topic {t.name!r} lists source {src!r}, which is not in "
+                                     f"sources {self.sources}")
             for lang in t.keywords:
                 if lang not in self.languages:
                     raise ValueError(f"Topic {t.name!r} has keywords in {lang!r}, "

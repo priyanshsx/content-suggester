@@ -20,11 +20,15 @@ def author_key(item: dict) -> str:
 #--------------------------------------------------------------#
 
 # Greedy pick with diversity limits
-def pick(items: list[dict], n: int, max_per_author: int, max_per_pillar: int) -> list[dict]:
+def pick(items: list[dict], n: int, max_per_author: int, max_per_pillar: int,
+         max_per_subreddit: int | None = None) -> list[dict]:
     chosen, per_author, per_pillar = [], {}, {}
     for it in sorted(items, key=lambda x: x["score"], reverse=True):
         a, p = author_key(it), it["pillar"]
-        if per_author.get(a, 0) >= max_per_author or per_pillar.get(p, 0) >= max_per_pillar:
+        # On Reddit the "author" is the subreddit, so it gets its own limit
+        cap = (max_per_subreddit or max_per_author) if it.get("platform") == "reddit" \
+            else max_per_author
+        if per_author.get(a, 0) >= cap or per_pillar.get(p, 0) >= max_per_pillar:
             continue
         chosen.append(it)
         per_author[a] = per_author.get(a, 0) + 1
@@ -55,7 +59,8 @@ def run(ctx: RunContext, today: date | None = None) -> None:
             scored.append({**it, "score": row["score"]})
 
     slots = max(ctx.cfg.threads_per_week - len(kept), 0)
-    chosen = pick(scored, slots, ctx.cfg.max_per_author, ctx.cfg.max_per_pillar)
+    chosen = pick(scored, slots, ctx.cfg.max_per_author, ctx.cfg.max_per_pillar,
+                  ctx.cfg.max_per_subreddit)
     for rank, it in enumerate(chosen, start=len(kept) + 1):
         ctx.conn.execute(
             "INSERT INTO suggestions (client_id, item_id, week, score, rank, status, created_at) "
