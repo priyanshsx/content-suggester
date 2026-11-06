@@ -43,6 +43,8 @@ def build_prompt(cfg: Config, item: dict) -> str:
         posted_at=item.get("posted_at") or "unknown",
         url=item.get("url") or "",
         text=(item.get("text") or "").strip(),
+        request_definition=(cfg.requests.what_counts.strip()
+                            or f"help with what {cfg.display_name} offers (see Offer above)"),
     )
 #--------------------------------------------------------------#
 
@@ -59,6 +61,8 @@ def classify_one(cfg: Config, conn, client_id: int, item: dict) -> ThreadClassif
         verdict.pillar = "none"
     if not verdict.is_relevant:
         verdict.comment_angle = ""
+    if not verdict.is_request:
+        verdict.request_summary = ""
     return verdict
 #--------------------------------------------------------------#
 
@@ -84,7 +88,7 @@ def run(ctx: RunContext) -> None:
 
     model = _settings()[0]
     version = prompt_version(PROMPT)
-    done = relevant = jobs = failed = 0
+    done = relevant = jobs = requests = failed = 0
     for item in items:
         try:
             v = classify_one(ctx.cfg, ctx.conn, ctx.client_id, item)
@@ -103,6 +107,10 @@ def run(ctx: RunContext) -> None:
             "reason": v.reason,
             "new_terms_json": json.dumps(v.new_terms, ensure_ascii=False),
             "is_job_post": int(v.is_job_post),
+            "is_request": int(v.is_request),
+            "request_summary": v.request_summary,
+            "requester_company": v.requester_company,
+            "poster_kind": v.poster_kind,
             "model": model,
             "prompt_version": version,
             "created_at": now_iso(),
@@ -110,7 +118,8 @@ def run(ctx: RunContext) -> None:
         done += 1
         relevant += v.is_relevant
         jobs += v.is_job_post
-    log.info("classify: %d classified, %d relevant, %d job posts, %d failed",
-             done, relevant, jobs, failed)
+        requests += v.is_request
+    log.info("classify: %d classified, %d relevant, %d job posts, %d requests, %d failed",
+             done, relevant, jobs, requests, failed)
 #--------------------------------------------------------------#
 #----------------------End-of-code-----------------------------#

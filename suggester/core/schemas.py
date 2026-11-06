@@ -47,6 +47,13 @@ class ThreadClassification(BaseModel):
     comment_angle: str = Field(description="What the client could usefully say. Empty if not relevant")
     is_job_post: bool = Field(default=False,
                               description="True if the post advertises a job or looks for candidates")
+    is_request: bool = Field(default=False,
+                             description="True if the author is looking for outside help: a provider, "
+                                         "consultant, freelancer, partner or recommendation")
+    request_summary: str = Field(default="", description="One line: what they need. Empty if not a request")
+    requester_company: str = Field(default="", description="Company the author represents, if stated")
+    poster_kind: Literal["person", "company", "unknown"] = Field(
+        default="unknown", description="Whether the post comes from a person or a company page")
     new_terms: list[str] = Field(default_factory=list, max_length=3,
                                  description="Up to 3 short phrases the author uses that are worth "
                                              "tracking as search keywords")

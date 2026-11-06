@@ -9,8 +9,8 @@ from suggester.core.config import load_config
 from suggester.core.db import connect, get_client_id, init_db
 from suggester.core.llm import LLMError
 from suggester.core.log import get_logger
-from suggester.pipeline import (classify, collect, export, feedback, report, score, select,
-                                sheet_sync)
+from suggester.pipeline import (classify, collect, export, feedback, report, request_finder,
+                                score, select, sheet_sync)
 from suggester.pipeline.context import RunContext, iso_week
 #--------------------------------------------------------------#
 
@@ -24,6 +24,7 @@ STAGES = {
     "select": select.run,
     "export": export.run,
     "sync": sheet_sync.run,
+    "requests": request_finder.run,
     "import-feedback": feedback.run,
     "report": report.run,
 }

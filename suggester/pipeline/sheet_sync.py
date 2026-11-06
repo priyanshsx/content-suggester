@@ -11,6 +11,7 @@
 #--------------------------------------------------------------#
 
 # Imports Libraries
+import re
 from datetime import date
 
 from gspread.utils import rowcol_to_a1
@@ -51,6 +52,20 @@ HIRING_ENGINE = {
     "Who is hiring": "who_is_hiring",
 }
 HIRING_TEAM = ["Status", "Note"]
+REQUESTS_ENGINE = {
+    "Request ID": "request_id",
+    "Found on": "found_on",
+    "Platform": "platform",
+    "Poster": "poster",
+    "Poster profile": "poster_profile",
+    "Company": "company",
+    "What they need": "need",
+    "Post link": "url",
+    "Pillar": "pillar",
+    "Region": "region",
+}
+REQUESTS_TEAM = ["Status", "Note", "Last updated"]     # Status: new, contacted, not relevant
+REDDIT_USER = re.compile(r"\bu/([A-Za-z0-9_-]{3,20})\b")
 #--------------------------------------------------------------#
 
 # Priority from rank within its week: top third = high, middle third = medium, rest = low
@@ -159,6 +174,60 @@ def push(ws, headers, col, by_key, records: list[dict], engine: dict, key_header
     return len(updates), len(new_rows)
 #--------------------------------------------------------------#
 
+# Profile link for a request's poster: LinkedIn from the post URL's handle, Reddit when the name is visible
+def poster_profile(platform: str, handle: str | None, kind: str | None, text: str | None) -> str:
+    if platform == "linkedin" and handle:
+        if kind == "person":
+            return f"https://www.linkedin.com/in/{handle}"
+        if kind == "company":
+            return f"https://www.linkedin.com/company/{handle}"
+        return ""                                    # can't tell person from company page: use the post link
+    if platform == "reddit":
+        m = REDDIT_USER.search(text or "")
+        return f"https://www.reddit.com/user/{m.group(1)}" if m else ""
+    return ""
+#--------------------------------------------------------------#
+
+# All requests found for this client
+def request_rows(ctx: RunContext) -> list[dict]:
+    rows = ctx.conn.execute(
+        "SELECT i.id AS request_id, i.platform, i.url, i.author_handle, i.text, "
+        "       substr(i.first_seen_at, 1, 10) AS found_on, "
+        "       COALESCE(i.author_name, i.author_handle, '') AS poster, "
+        "       c.requester_company AS company, c.request_summary AS need, c.pillar, c.region, "
+        "       c.poster_kind "
+        "FROM items i JOIN classifications c ON c.item_id = i.id "
+        "WHERE i.client_id = ? AND c.is_request = 1 ORDER BY i.first_seen_at",
+        (ctx.client_id,)).fetchall()
+    out = []
+    for r in rows:
+        d = dict(r)
+        d["poster_profile"] = poster_profile(d["platform"], d.pop("author_handle"),
+                                             d.pop("poster_kind"), d.pop("text"))
+        if d["pillar"] == "none":
+            d["pillar"] = ""
+        out.append(d)
+    return out
+#--------------------------------------------------------------#
+
+# Requests tab: pull your Status and Note, then push requests (new rows appended)
+def sync_requests(ctx: RunContext) -> None:
+    sheets = ctx.cfg.sheets
+    if not sheets.spreadsheet_id:
+        log.warning("sync: no sheets.spreadsheet_id in %s's config, skipping", ctx.cfg.client)
+        return
+    ws = open_worksheet(sheets.spreadsheet_id, sheets.requests_tab)
+    headers, col, by_key = read_tab(ws, list(REQUESTS_ENGINE) + REQUESTS_TEAM, "Request ID")
+    for key, (_, row) in by_key.items():
+        ctx.conn.execute(
+            "UPDATE classifications SET request_status = ?, request_note = ? WHERE item_id = ?",
+            (cell(row, col, "Status").lower() or None, cell(row, col, "Note") or None, int(key)))
+    ctx.conn.commit()
+    updated, added = push(ws, headers, col, by_key, request_rows(ctx), REQUESTS_ENGINE, "Request ID")
+    log.info("sync requests: %d reviewed rows pulled, %d cells updated, %d requests added (tab %r)",
+             len(by_key), updated, added, sheets.requests_tab)
+#--------------------------------------------------------------#
+
 # Stage entry point (the CLI calls this)
 def run(ctx: RunContext) -> None:
     sheets = ctx.cfg.sheets
@@ -190,5 +259,9 @@ def run(ctx: RunContext) -> None:
     updated, added = push(ws, headers, col, by_key, hiring_rows(ctx), HIRING_ENGINE, "Item ID")
     log.info("sync hiring: %d cells updated, %d job posts added (tab %r)",
              updated, added, sheets.hiring_tab)
+
+    # Requests: only for clients with request phrases in their config
+    if ctx.cfg.requests.keywords:
+        sync_requests(ctx)
 #--------------------------------------------------------------#
 #----------------------End-of-code-----------------------------#

@@ -26,6 +26,22 @@ def build_queries(cfg: Config, source: str) -> list[Query]:
     return queries
 #--------------------------------------------------------------#
 
+# Build the request queries for one source (stage "requests")
+def build_request_queries(cfg: Config, source: str) -> list[Query]:
+    template = cfg.query_templates.get(source)
+    if template is None or source not in cfg.requests.sources:
+        return []
+    queries, seen = [], set()
+    for lang, phrases in cfg.requests.keywords.items():
+        for phrase in phrases:
+            text = template.format(keyword=phrase)
+            if text not in seen:
+                seen.add(text)
+                queries.append(Query(text=text, keyword=phrase, topic="requests",
+                                     pillar="none", language=lang))
+    return queries
+#--------------------------------------------------------------#
+
 # Run directly to preview the queries for a client
 if __name__ == "__main__":
     import sys

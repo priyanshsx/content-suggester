@@ -36,6 +36,19 @@ is_job_post = true if the post advertises a job, a freelance/contract role, or l
 
 has_pain_or_question = true if the author describes a problem, delay, frustration or asks for advice.
 
+is_request = true only if the author (or the company they post for) is looking for outside help that
+{{display_name}} could provide: a provider, consultant, agency, freelancer, partner or a recommendation
+for one. What counts for {{display_name}}: {{request_definition}}
+Not a request: people or companies offering their own services ("we help companies..."), recruiters
+or agencies advertising roles for others (those are job posts), and general discussions or opinions.
+A company looking for a freelancer for its own project is a request (and may also be a job post).
+- request_summary: one line on what they need (e.g. "Wants help cleaning material master data before
+  S/4HANA go-live"). Empty when is_request is false.
+- requester_company: the company the author represents, if the post or author name states it. Empty
+  otherwise. Do not guess.
+- poster_kind: "person" if the post comes from an individual, "company" if from a company page,
+  "unknown" if you can't tell.
+
 region: one of {{regions}}, "other", or "unknown". Use language, place names and company hints. The post's language is a hint (e.g. German-language posts usually come from DACH). Do not guess: use "unknown" when there are no hints.
 
 pillar: the best-matching pillar name from the list, or "none".

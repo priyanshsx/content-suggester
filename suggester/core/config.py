@@ -47,6 +47,14 @@ class Sheets(Strict):
     spreadsheet_id: str = ""                 # blank = the sync stage is skipped
     posts_tab: str = "Posts"
     hiring_tab: str = "Hiring"
+    requests_tab: str = "Requests"
+
+
+class Requests(Strict):
+    keywords: dict[str, list[str]] = Field(default_factory=dict)   # language -> request phrases
+    sources: list[str] = Field(default_factory=list)               # sources to search for requests
+    what_counts: str = ""                    # the help people might ask for (goes into the classifier)
+    lookback_days: int = Field(default=7, gt=0)
 
 
 class Config(Strict):
@@ -75,6 +83,7 @@ class Config(Strict):
     query_languages: dict[str, list[str]] = Field(default_factory=dict)  # per source; default all
     scoring: Scoring
     sheets: Sheets = Field(default_factory=Sheets)   # the client's Google Sheet (stage "sync")
+    requests: Requests = Field(default_factory=Requests)   # people asking for help (stage "requests")
 #--------------------------------------------------------------#
 
     # Cross-checks between sections that Pydantic can't see on its own
@@ -93,6 +102,12 @@ class Config(Strict):
                 if lang not in self.languages:
                     raise ValueError(f"Topic {t.name!r} has keywords in {lang!r}, "
                                      f"which is not in languages {self.languages}")
+        for lang in self.requests.keywords:
+            if lang not in self.languages:
+                raise ValueError(f"requests has keywords in {lang!r}, which is not in languages {self.languages}")
+        for src in self.requests.sources:
+            if src != "manual_paste" and src not in self.query_templates:
+                raise ValueError(f"requests lists source {src!r}, which has no query template")
         for tpl_name, tpl in self.query_templates.items():
             if "{keyword}" not in tpl:
                 raise ValueError(f"Query template {tpl_name!r} must contain {{keyword}}")
