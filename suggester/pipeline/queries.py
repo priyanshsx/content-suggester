@@ -31,6 +31,8 @@ def build_request_queries(cfg: Config, source: str) -> list[Query]:
     template = cfg.query_templates.get(source)
     if template is None or source not in cfg.requests.sources:
         return []
+    # Broad: the words in any order, not the exact phrase (requests are rarely worded exactly as we guess)
+    template = template.replace('"{keyword}"', "{keyword}")
     queries, seen = [], set()
     for lang, phrases in cfg.requests.keywords.items():
         for phrase in phrases:

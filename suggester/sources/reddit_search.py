@@ -28,7 +28,7 @@ class RedditSearch:
     def fetch(self, queries: list[Query], since: date) -> list[SourceItem]:
         items = []
         for q in queries:
-            for r in serper.search(q.text, period="w"):
+            for r in serper.search(q.text, period=serper.period_since(since)):
                 url = r.get("link", "")
                 match = THREAD_URL.search(url)
                 if not match:

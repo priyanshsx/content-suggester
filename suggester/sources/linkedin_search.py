@@ -43,7 +43,7 @@ class LinkedInSearch:
         items = []
         for q in queries:
             gl = hl = q.language if q.language != "en" else None
-            for r in serper.search(q.text, period="w", gl=gl, hl=hl):
+            for r in serper.search(q.text, period=serper.period_since(since), gl=gl, hl=hl):
                 url = r.get("link", "")
                 if not POST_URL.search(url):           # skip profiles, jobs, company pages
                     continue

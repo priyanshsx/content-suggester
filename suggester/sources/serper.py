@@ -48,6 +48,13 @@ def _post(payload: dict) -> dict:
 # Main entry point: search Google, return the organic results
 #   period: "d" past day, "w" past week, "m" past month
 #   gl/hl:  country and language, e.g. gl="de", hl="de" for German results
+# Google's time filter for "posts since this date": week, month or year
+def period_since(since) -> str:
+    from datetime import date
+    days = (date.today() - since).days
+    return "w" if days <= 7 else "m" if days <= 31 else "y"
+#--------------------------------------------------------------#
+
 def search(q: str, period: str = "w", num: int = 10,
            gl: str | None = None, hl: str | None = None) -> list[dict]:
     payload = {"q": q, "tbs": f"qdr:{period}", "num": num}
