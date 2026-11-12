@@ -5,6 +5,7 @@
 import argparse
 import sys
 
+from suggester.core import usage
 from suggester.core.config import load_config
 from suggester.core.db import connect, get_client_id, init_db
 from suggester.core.llm import LLMError
@@ -64,6 +65,7 @@ def main(argv: list[str] | None = None) -> int:
             log.error(str(e))
             return 1
 
+        usage.set_context(client_id, args.stage)        # search costs are logged per client and stage
         ctx = RunContext(cfg=cfg, conn=conn, client_id=client_id,
                          week=args.week or iso_week(), dry_run=args.dry_run,
                          feedback_file=args.file)

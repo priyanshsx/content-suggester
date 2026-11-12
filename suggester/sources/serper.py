@@ -11,6 +11,7 @@ from pathlib import Path
 import httpx
 from dotenv import load_dotenv
 
+from suggester.core import usage
 from suggester.core.log import get_logger
 from suggester.core.paths import CACHE_DIR, ROOT
 #--------------------------------------------------------------#
@@ -68,6 +69,8 @@ def search(q: str, period: str = "w", num: int = 10,
         data = json.loads(path.read_text(encoding="utf-8"))
     else:
         data = _post(payload)
+        credits = 1 if num <= 10 else 2                # Serper bills 1 credit per 10 results
+        usage.log_call("serper", credits, credits * usage.serper_price())
         CACHE.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
         log.info("serper: %r -> %d results", q, len(data.get("organic", [])))
