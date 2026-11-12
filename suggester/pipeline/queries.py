@@ -33,8 +33,11 @@ def build_request_queries(cfg: Config, source: str) -> list[Query]:
         return []
     # Broad: the words in any order, not the exact phrase (requests are rarely worded exactly as we guess)
     template = template.replace('"{keyword}"', "{keyword}")
+    allowed = cfg.query_languages.get(source)          # e.g. SAP Community: English and German only
     queries, seen = [], set()
     for lang, phrases in cfg.requests.keywords.items():
+        if allowed and lang not in allowed:
+            continue
         for phrase in phrases:
             text = template.format(keyword=phrase)
             if text not in seen:
