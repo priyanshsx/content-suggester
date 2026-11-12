@@ -253,12 +253,13 @@ def run(ctx: RunContext) -> None:
              pulled, updated, added, sheets.posts_tab)
     log_approval(ctx, weeks)
 
-    # Hiring: push job posts (one-way for now)
-    ws = open_worksheet(sheets.spreadsheet_id, sheets.hiring_tab)
-    headers, col, by_key = read_tab(ws, list(HIRING_ENGINE) + HIRING_TEAM, "Item ID")
-    updated, added = push(ws, headers, col, by_key, hiring_rows(ctx), HIRING_ENGINE, "Item ID")
-    log.info("sync hiring: %d cells updated, %d job posts added (tab %r)",
-             updated, added, sheets.hiring_tab)
+    # Hiring tab: only if a client still sets one (job posts now go to the Leads tab via job-alerts)
+    if sheets.hiring_tab:
+        ws = open_worksheet(sheets.spreadsheet_id, sheets.hiring_tab)
+        headers, col, by_key = read_tab(ws, list(HIRING_ENGINE) + HIRING_TEAM, "Item ID")
+        updated, added = push(ws, headers, col, by_key, hiring_rows(ctx), HIRING_ENGINE, "Item ID")
+        log.info("sync hiring: %d cells updated, %d job posts added (tab %r)",
+                 updated, added, sheets.hiring_tab)
 
     # Requests: only for clients with request phrases in their config
     if ctx.cfg.requests.keywords:

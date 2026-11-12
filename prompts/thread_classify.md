@@ -32,7 +32,8 @@ author_type:
 - other: anything else (news, students, unclear).
 A vendor post can still be relevant if the goal above says so (e.g. a platform's own announcements, when the goal is visibility).
 
-is_job_post = true if the post advertises a job, a freelance/contract role, or looks for candidates. Note in the reason whether it is the hiring company itself or a recruiter/agency.
+is_job_post = true if the post advertises a job, a freelance/contract role, or looks for candidates. Note in the reason whether it is the hiring company itself or a recruiter/agency. People looking for work themselves (job seekers, freelancers offering their services) are not job posts.
+- hiring_company: for job posts, the company that is hiring, only if the post or the poster's company page names it (not the recruiter or agency posting on its behalf). Empty if not named. Do not guess.
 
 has_pain_or_question = true if the author describes a problem, delay, frustration or asks for advice.
 

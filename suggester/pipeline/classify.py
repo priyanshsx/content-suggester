@@ -108,6 +108,7 @@ def run(ctx: RunContext) -> None:
             "new_terms_json": json.dumps(v.new_terms, ensure_ascii=False),
             "is_job_post": int(v.is_job_post),
             "is_request": int(v.is_request),
+            "hiring_company": v.hiring_company if v.is_job_post else "",
             "request_summary": v.request_summary,
             "requester_company": v.requester_company,
             "poster_kind": v.poster_kind,

@@ -51,6 +51,8 @@ class ThreadClassification(BaseModel):
                              description="True if the author is looking for outside help: a provider, "
                                          "consultant, freelancer, partner or recommendation")
     request_summary: str = Field(default="", description="One line: what they need. Empty if not a request")
+    hiring_company: str = Field(default="", description="For job posts: the company that is hiring, if the "
+                                                        "post names it (not the recruiter). Empty otherwise")
     requester_company: str = Field(default="", description="Company the author represents, if stated")
     poster_kind: Literal["person", "company", "unknown"] = Field(
         default="unknown", description="Whether the post comes from a person or a company page")

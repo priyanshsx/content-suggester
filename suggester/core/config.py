@@ -46,7 +46,7 @@ class Compliance(Strict):
 class Sheets(Strict):
     spreadsheet_id: str = ""                 # blank = the sync stage is skipped
     posts_tab: str = "Posts"
-    hiring_tab: str = "Hiring"
+    hiring_tab: str = ""                     # blank = off: job posts go to the Leads tab (via job-alerts)
     requests_tab: str = "Requests"
 
 
