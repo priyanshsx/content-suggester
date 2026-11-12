@@ -17,6 +17,7 @@ suggester/core/paths.py
 suggester/core/prompts.py
 suggester/core/schemas.py
 suggester/core/sheets.py
+suggester/core/usage.py
 suggester/pipeline/__init__.py
 suggester/pipeline/classify.py
 suggester/pipeline/collect.py
@@ -25,6 +26,7 @@ suggester/pipeline/export.py
 suggester/pipeline/feedback.py
 suggester/pipeline/queries.py
 suggester/pipeline/report.py
+suggester/pipeline/request_finder.py
 suggester/pipeline/score.py
 suggester/pipeline/select.py
 suggester/pipeline/sheet_sync.py
@@ -33,6 +35,7 @@ suggester/sources/__init__.py
 suggester/sources/base.py
 suggester/sources/linkedin_search.py
 suggester/sources/manual_paste.py
+suggester/sources/reddit_search.py
 suggester/sources/sap_community.py
 suggester/sources/serper.py
 tests/test_cli.py
