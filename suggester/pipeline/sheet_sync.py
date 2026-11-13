@@ -90,7 +90,7 @@ def post_rows(ctx: RunContext) -> list[dict]:
         "       i.text, c.reason AS why_it_matters, c.comment_angle "
         "FROM suggestions s JOIN items i ON i.id = s.item_id "
         "JOIN classifications c ON c.item_id = i.id "
-        "WHERE s.client_id = ? ORDER BY s.week, s.rank",
+        "WHERE s.client_id = ? ORDER BY s.week DESC, s.rank",
         (ctx.client_id,)).fetchall()
     per_week: dict[str, int] = {}
     for r in rows:
@@ -113,7 +113,7 @@ def hiring_rows(ctx: RunContext) -> list[dict]:
         "       COALESCE(i.posted_at, substr(i.first_seen_at, 1, 10)) AS posted_at, i.url, "
         "       i.text, c.reason AS who_is_hiring "
         "FROM items i JOIN classifications c ON c.item_id = i.id "
-        "WHERE i.client_id = ? AND c.is_job_post = 1 ORDER BY i.first_seen_at",
+        "WHERE i.client_id = ? AND c.is_job_post = 1 ORDER BY i.first_seen_at DESC",
         (ctx.client_id,)).fetchall()
     out = []
     for r in rows:
@@ -170,7 +170,7 @@ def push(ws, headers, col, by_key, records: list[dict], engine: dict, key_header
     if updates:
         ws.batch_update(updates, value_input_option="RAW")      # RAW: text is never a formula
     if new_rows:
-        ws.append_rows(new_rows, value_input_option="RAW")
+        ws.insert_rows(new_rows, row=2, value_input_option="RAW")      # newest at the top, under the header
     return len(updates), len(new_rows)
 #--------------------------------------------------------------#
 
@@ -197,7 +197,7 @@ def request_rows(ctx: RunContext) -> list[dict]:
         "       c.requester_company AS company, c.request_summary AS need, c.pillar, c.region, "
         "       c.poster_kind "
         "FROM items i JOIN classifications c ON c.item_id = i.id "
-        "WHERE i.client_id = ? AND c.is_request = 1 ORDER BY i.first_seen_at",
+        "WHERE i.client_id = ? AND c.is_request = 1 ORDER BY i.first_seen_at DESC",
         (ctx.client_id,)).fetchall()
     out = []
     for r in rows:
