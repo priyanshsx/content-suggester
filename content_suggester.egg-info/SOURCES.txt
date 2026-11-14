@@ -30,6 +30,7 @@ suggester/pipeline/request_finder.py
 suggester/pipeline/score.py
 suggester/pipeline/select.py
 suggester/pipeline/sheet_sync.py
+suggester/pipeline/themes.py
 suggester/signals/__init__.py
 suggester/sources/__init__.py
 suggester/sources/base.py
@@ -47,3 +48,4 @@ tests/test_pipeline.py
 tests/test_pipeline_fake_source.py
 tests/test_prompts.py
 tests/test_sources.py
+tests/test_themes.py

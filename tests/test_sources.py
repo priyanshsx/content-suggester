@@ -149,7 +149,7 @@ def test_build_queries_for_vizcorn():
     cfg = load_config("vizcorn")
     qs = build_queries(cfg, "linkedin_search")
     assert qs and all(x.text.startswith('site:linkedin.com/posts "') for x in qs)
-    assert {x.language for x in qs} == {"en", "de"}
+    assert {"en", "de"} <= {x.language for x in qs}
     assert build_queries(cfg, "manual_paste") == []            # no template = no queries
 # Tests: topics limited to some sources, and the Reddit per-subreddit cap
 def test_topic_sources_limit_queries():

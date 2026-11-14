@@ -60,4 +60,18 @@ class ThreadClassification(BaseModel):
                                  description="Up to 3 short phrases the author uses that are worth "
                                              "tracking as search keywords")
 #--------------------------------------------------------------#
+
+# Themes stage: what the LLM returns for one expertise area.
+# Evidence is given as the post numbers shown in the prompt ([1], [2], ...); code checks them.
+class ThemeDraft(BaseModel):
+    reason: str = Field(description="Why this recurs in the posts and why the client can speak to it")
+    theme: str = Field(description="One line naming a tension, question or claim, not a topic")
+    angle: str = Field(description="One-line suggested angle for the client's own post")
+    research_cue: str = Field(default="", description="What to measure, if the prompt asks for it; else empty")
+    evidence: list[int] = Field(description="Numbers of the posts that show this theme")
+
+
+class ThemeBatch(BaseModel):
+    themes: list[ThemeDraft] = Field(default_factory=list, max_length=5)
+#--------------------------------------------------------------#
 #----------------------End-of-code-----------------------------#

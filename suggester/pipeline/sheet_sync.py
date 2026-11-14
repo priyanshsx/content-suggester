@@ -124,8 +124,9 @@ def hiring_rows(ctx: RunContext) -> list[dict]:
     return out
 #--------------------------------------------------------------#
 
-# Read a tab once; add any missing headers at the end of row 1; index rows by their ID column
-def read_tab(ws, headers_wanted: list[str], key_header: str):
+# Read a tab once; add any missing headers at the end of row 1; index rows by their ID column.
+# numeric_keys=False accepts text IDs (e.g. theme IDs like quartermaster-2026w46-01).
+def read_tab(ws, headers_wanted: list[str], key_header: str, numeric_keys: bool = True):
     values = ws.get_all_values()
     headers = values[0] if values else []
     missing = [h for h in headers_wanted if h not in headers]
@@ -139,7 +140,7 @@ def read_tab(ws, headers_wanted: list[str], key_header: str):
     by_key = {}
     for row_number, row in enumerate(values[1:] if values else [], start=2):
         key = row[col[key_header]].strip() if col[key_header] < len(row) else ""
-        if key.isdigit():
+        if key.isdigit() or (key and not numeric_keys):
             by_key[key] = (row_number, row)
     return headers, col, by_key
 #--------------------------------------------------------------#
@@ -150,8 +151,10 @@ def cell(row: list[str], col: dict, header: str) -> str:
     return row[i].strip() if i < len(row) else ""
 #--------------------------------------------------------------#
 
-# Push records into a tab: update changed engine cells, append new rows. Never touches team columns.
-def push(ws, headers, col, by_key, records: list[dict], engine: dict, key_header: str) -> tuple[int, int]:
+# Push records into a tab: update changed engine cells, append new rows. Never touches team columns
+# of existing rows; new_row_defaults fills team columns on new rows only (e.g. Status "new").
+def push(ws, headers, col, by_key, records: list[dict], engine: dict, key_header: str,
+         new_row_defaults: dict | None = None) -> tuple[int, int]:
     updates, new_rows = [], []
     for rec in records:
         key = str(rec[engine[key_header]])
@@ -164,7 +167,7 @@ def push(ws, headers, col, by_key, records: list[dict], engine: dict, key_header
                                     "values": [[value]]})
         else:
             row = [""] * len(headers)
-            for header, value in values.items():
+            for header, value in {**(new_row_defaults or {}), **values}.items():
                 row[col[header]] = value
             new_rows.append(row)
     if updates:

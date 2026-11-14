@@ -19,6 +19,10 @@ engagement_goal: >-
   Comment where the client can add real expertise to a conversation about one of its pillars:
   an answer, a lesson from experience, or a useful question.
 
+# Content ideas (stage "themes"): off unless a client sets themes.enabled: true.
+# Optional per client: window_days (7), min_posts (3), min_sources (2), max_themes_per_area (2),
+# research_cue (adds a "what to measure" line). Pillars can carry a rank (1 = strongest area).
+
 query_templates:
   linkedin_search: 'site:linkedin.com/posts "{keyword}"'
   sap_community: 'site:community.sap.com "{keyword}"'

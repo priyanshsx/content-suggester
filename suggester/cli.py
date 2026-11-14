@@ -11,7 +11,7 @@ from suggester.core.db import connect, get_client_id, init_db
 from suggester.core.llm import LLMError
 from suggester.core.log import get_logger
 from suggester.pipeline import (classify, collect, export, feedback, report, request_finder,
-                                score, select, sheet_sync)
+                                score, select, sheet_sync, themes)
 from suggester.pipeline.context import RunContext, iso_week
 #--------------------------------------------------------------#
 
@@ -28,8 +28,10 @@ STAGES = {
     "requests": request_finder.run,
     "import-feedback": feedback.run,
     "report": report.run,
+    "themes": themes.run,                 # weekly content ideas (clients with themes.enabled)
 }
-ALL_ORDER = ["collect", "classify", "score", "select", "sync"]   # export (CSV), feedback, report: run separately
+ALL_ORDER = ["collect", "classify", "score", "select", "sync"]   # export (CSV), feedback, report,
+                                                                 # themes: run separately
 #--------------------------------------------------------------#
 
 # Read the command-line arguments

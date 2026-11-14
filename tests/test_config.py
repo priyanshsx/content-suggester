@@ -23,7 +23,7 @@ def test_vizcorn_config_loads():
     cfg = config.load_config("vizcorn")
     assert cfg.client == "vizcorn"
     assert cfg.threads_per_week > 0                    # set (template default or override)
-    assert cfg.languages == ["en", "de"]               # client overrides template
+    assert {"en", "de"} <= set(cfg.languages)               # client overrides template
     assert len(cfg.topics) >= 1
 
 

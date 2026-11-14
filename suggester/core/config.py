@@ -24,6 +24,7 @@ class Strict(BaseModel):
 class Pillar(Strict):
     name: str
     description: str
+    rank: int | None = Field(default=None, ge=1)   # expertise strength for themes: 1 = strongest
 
 
 class Topic(Strict):
@@ -46,6 +47,7 @@ class Compliance(Strict):
 class Sheets(Strict):
     spreadsheet_id: str = ""                 # blank = the sync stage is skipped
     posts_tab: str = "Posts"
+    ideas_tab: str = "Content Ideas"         # themes stage writes here
     hiring_tab: str = ""                     # blank = off: job posts go to the Leads tab (via job-alerts)
     requests_tab: str = "Requests"
 
@@ -55,6 +57,17 @@ class Requests(Strict):
     sources: list[str] = Field(default_factory=list)               # sources to search for requests
     what_counts: str = ""                    # the help people might ask for (goes into the classifier)
     lookback_days: int = Field(default=7, gt=0)
+
+
+class Themes(Strict):
+    enabled: bool = False                    # stage "themes" skips clients that don't switch it on
+    window_days: int = Field(default=7, gt=0, le=60)    # posts from the last N days
+    min_posts: int = Field(default=3, ge=2)             # a theme needs at least this many posts...
+    min_sources: int = Field(default=2, ge=1)           # ...from at least this many authors/communities
+    max_themes_per_area: int = Field(default=2, ge=1, le=5)
+    max_posts_per_area: int = Field(default=60, ge=5, le=150)   # posts shown to the LLM per area
+    research_cue: str = ""                   # if set, each theme gets a "what to measure" line;
+                                             # the text says what kind of line that is
 
 
 class Config(Strict):
@@ -84,6 +97,7 @@ class Config(Strict):
     scoring: Scoring
     sheets: Sheets = Field(default_factory=Sheets)   # the client's Google Sheet (stage "sync")
     requests: Requests = Field(default_factory=Requests)   # people asking for help (stage "requests")
+    themes: Themes = Field(default_factory=Themes)         # content ideas (stage "themes")
 #--------------------------------------------------------------#
 
     # Cross-checks between sections that Pydantic can't see on its own
@@ -102,6 +116,9 @@ class Config(Strict):
                 if lang not in self.languages:
                     raise ValueError(f"Topic {t.name!r} has keywords in {lang!r}, "
                                      f"which is not in languages {self.languages}")
+        ranks = [p.rank for p in self.pillars if p.rank is not None]
+        if len(ranks) != len(set(ranks)):
+            raise ValueError(f"Pillar ranks must be unique, got {sorted(ranks)}")
         for lang in self.requests.keywords:
             if lang not in self.languages:
                 raise ValueError(f"requests has keywords in {lang!r}, which is not in languages {self.languages}")
